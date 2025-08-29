@@ -1,0 +1,17 @@
+# PyInstaller
+/build/
+/dist/
+/__pycache__/
+*.spec
+
+# Data
+/data/
+*.json
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+*.bak
