@@ -5,6 +5,7 @@ from datetime import datetime
 from core.config import APP_TITLE, APP_ICON, ICONS_DIR
 from utils.validation import validate_icon_path
 from utils.file_utils import load_transactions, save_transactions, load_passcode, save_passcode
+from utils.date_filter import filter_transactions_by_date
 from dialogs.passcode_dialog import PasscodeDialog
 from dialogs.transaction_dialog import EnhancedTransactionDialog
 from dialogs.edit_dialog import EditTransactionDialog
@@ -126,25 +127,53 @@ class ModernTransactionApp:
               bg='#e67e22', fg='white', font=("Arial", 12, "bold"), 
               width=15, height=1, relief=tk.FLAT).pack(side=tk.LEFT, padx=10)
         
+        # Date filter frame
+        date_filter_frame = Frame(main_frame, bg='#f0f0f0')
+        date_filter_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # From date
+        Label(date_filter_frame, text="From Date:", font=("Arial", 10, "bold"), bg='#f0f0f0').pack(side=tk.LEFT, padx=(0, 5))
+        self.from_date_var = tk.StringVar()
+        from_date_entry = Entry(date_filter_frame, textvariable=self.from_date_var, font=("Arial", 11), width=16)
+        from_date_entry.pack(side=tk.LEFT, padx=(0, 10))
+        from_date_entry.insert(0, " YYYY-MM-DD")
+        
+        # To date
+        Label(date_filter_frame, text="To Date:", font=("Arial", 10, "bold"), bg='#f0f0f0').pack(side=tk.LEFT, padx=(0, 5))
+        self.to_date_var = tk.StringVar()
+        to_date_entry = Entry(date_filter_frame, textvariable=self.to_date_var, font=("Arial", 11), width=16)
+        to_date_entry.pack(side=tk.LEFT, padx=(0, 16))
+        to_date_entry.insert(0, " YYYY-MM-DD")
+        
+        # Filter button
+        Button(date_filter_frame, text="Filter by Date", command=self.filter_by_date, 
+              bg='#9b59b6', fg='white', font=("Arial", 10, "bold"), 
+              width=15, relief=tk.FLAT).pack(side=tk.LEFT, padx=(0, 16))
+        
+        # Clear filter button
+        Button(date_filter_frame, text="Clear Filter", command=self.clear_date_filter, 
+              bg='#95a5a6', fg='white', font=("Arial", 10, "bold"), 
+              width=15, relief=tk.FLAT).pack(side=tk.LEFT)
+        
         # Quick search frame
         search_frame = Frame(main_frame)
         search_frame.pack(fill=tk.X, pady=(0, 15))
         
-        Label(search_frame, text="Quick search:", font=("Arial", 12)).pack(side=tk.LEFT, padx=5)
+        Label(search_frame, text="Quick search:", font=("Arial", 11, "bold")).pack(side=tk.LEFT, padx=5)
         
         self.search_var = tk.StringVar()
         self.search_var.trace('w', self.quick_search)
-        search_entry = Entry(search_frame, textvariable=self.search_var, font=("Arial", 12), width=26)
-        search_entry.pack(side=tk.LEFT, padx=5)
+        search_entry = Entry(search_frame, textvariable=self.search_var, font=("Arial", 12), width=28)
+        search_entry.pack(side=tk.LEFT, padx=8)
         search_entry.bind("<Return>", lambda e: self.quick_search())
         
         # Transactions filter
-        Label(search_frame, text="Transaction filter:", font=("Arial", 12)).pack(side=tk.LEFT, padx=(20, 5))
+        Label(search_frame, text="Transaction filter:", font=("Arial", 11, "bold")).pack(side=tk.LEFT, padx=(20, 5))
         
         self.operation_var = tk.StringVar(value="All")
         operation_combo = ttk.Combobox(search_frame, textvariable=self.operation_var, 
                                       values=["All", "Deposit only", "Withdrawal only"], 
-                                      state="readonly", width=15, font=("Arial", 12))
+                                      state="readonly", width=16, font=("Arial", 12))
         operation_combo.pack(side=tk.LEFT, padx=5)
         operation_combo.bind("<<ComboboxSelected>>", self.filter_by_operation)
         
@@ -158,7 +187,7 @@ class ModernTransactionApp:
                                     font=("Arial", 11, "bold"))
         search_results_label.pack(pady=10)
         
-        # Transactions table with bank-like design
+        # Transactions table
         table_frame = Frame(main_frame, bg='white', relief=tk.SUNKEN, bd=1)
         table_frame.pack(fill=tk.BOTH, expand=True)
         
@@ -218,6 +247,40 @@ class ModernTransactionApp:
         stats_label = Label(stats_frame, textvariable=self.stats_var, 
                            font=("Arial", 11), bg='#f0f0f0', fg='#2c3e50')
         stats_label.pack(side=tk.LEFT)
+    
+    def filter_by_date(self):
+        """Filter transactions by date range"""
+        from_date = self.from_date_var.get().strip()
+        to_date = self.to_date_var.get().strip()
+        
+        # Validate date format
+        if not from_date or not to_date:
+            messagebox.showwarning("Warning", "Please enter both from and to dates")
+            return
+        
+        try:
+            # Validate date format
+            datetime.strptime(from_date, "%Y-%m-%d")
+            datetime.strptime(to_date, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid date format. Please use YYYY-MM-DD")
+            return
+        
+        # Filter transactions using the external function
+        filtered_transactions = filter_transactions_by_date(self.transactions, from_date, to_date)
+        
+        if filtered_transactions:
+            self.update_display(filtered_transactions)
+        else:
+            self.update_display([])
+            messagebox.showinfo("Filter Results", 
+                              "No transactions found in the selected date range")
+    
+    def clear_date_filter(self):
+        """Clear date filter and show all transactions"""
+        self.from_date_var.set("")
+        self.to_date_var.set("")
+        self.update_display()
     
     def delete_transaction(self):
         """Delete selected transaction after passcode confirmation"""
