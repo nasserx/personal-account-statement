@@ -59,8 +59,8 @@ class PasscodeDialog:
         self.passcode_entry.bind("<Return>", lambda e: self.validate_passcode())
         
         # Focus on passcode entry
-        self.passcode_entry.focus()
-    
+        self.top.after(100, lambda: self.passcode_entry.focus_force())
+
     def validate_passcode(self):
         passcode = self.passcode_entry.get().strip()
         
