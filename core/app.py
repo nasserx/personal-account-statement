@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, Frame, Label, Entry, Button
 from datetime import datetime
 
-from core.config import APP_TITLE, APP_ICON, ICONS_DIR
+from core.config import APP_TITLE, APP_ICON
 from utils.validation import validate_icon_path
 from utils.file_utils import load_transactions, save_transactions, load_passcode, save_passcode
 from utils.date_filter import filter_transactions_by_date
@@ -222,8 +222,8 @@ class ModernTransactionApp:
         self.tree["displaycolumns"] = ("date", "deposit", "from_account", "withdrawal", "to_account", "description", "balance")
         
         # Add row colors
-        self.tree.tag_configure('deposit', foreground="green")  # Light green for deposits
-        self.tree.tag_configure('withdrawal', foreground="red")  # Light red for withdrawals
+        self.tree.tag_configure('deposit', foreground="#32CD32")
+        self.tree.tag_configure('withdrawal', foreground="#FF3030")
         
         # Scrollbar
         scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
