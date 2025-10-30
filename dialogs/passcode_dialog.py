@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Frame, Label, Entry, Button
+from tkinter import Frame, Label, Entry, Button, messagebox
 from utils.validation import validate_passcode
 
 class PasscodeDialog:
@@ -65,8 +65,8 @@ class PasscodeDialog:
         passcode = self.passcode_entry.get().strip()
         
         if not validate_passcode(passcode):
-            self.validation_label.config(text="Passcode must be exactly 4 digits")
-            return
+            messagebox.showerror("", "Passcode must be exactly 4 digits.")
+            return 
         
         self.result = passcode
         self.top.destroy()
